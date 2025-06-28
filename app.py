@@ -74,7 +74,7 @@ Answer:"""
 
 # --- Streamlit UI ---
 st.set_page_config(page_title="DocuQuery + LLaMA 3", layout="centered")
-st.title("📄 DocuQuery: PDF Q&A Powered by LLaMA 3")
+st.title("📄 VectorInsight- RAG Powered PDF Explorer")
 
 uploaded_file = st.file_uploader("📤 Upload a PDF", type=["pdf"])
 query = st.text_input("💬 Ask a question about the document")
