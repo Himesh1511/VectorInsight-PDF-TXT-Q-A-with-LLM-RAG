@@ -91,7 +91,7 @@ Answer:"""
 
 # --- Streamlit UI ---
 st.set_page_config(page_title="DocuQuery Multi-File + LLaMA 3", layout="centered")
-st.title("📁 DocuQuery: Multi-File PDF/TXT/Q&A with LLaMA 3")
+st.title("📁 VectorInsight: Multi-File PDF/TXT/Q&A with LLaMA 3")
 
 uploaded_files = st.file_uploader(
     "📤 Upload PDF, TXT, ZIP files (multiple supported)",
