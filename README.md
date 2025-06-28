@@ -75,9 +75,7 @@ Key components of the app:
 - Only supports research PDFs in English.
 - For best results, use research papers with selectable (not scanned) text.
 
-## License
 
-MIT License
 
 ## Acknowledgements
 
@@ -87,6 +85,4 @@ MIT License
 - [LangChain](https://github.com/langchain-ai/langchain)
 - [FAISS](https://github.com/facebookresearch/faiss)
 
----
 
-*Built with ❤️ for rapid RAG prototyping!*
