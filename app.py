@@ -90,7 +90,7 @@ Answer:"""
         raise Exception(f"LLaMA 3 API Error: {response.text}")
 
 # --- Streamlit UI ---
-st.set_page_config(page_title="DocuQuery Multi-File + LLaMA 3", layout="centered")
+st.set_page_config(page_title="VectorInsight", layout="centered")
 st.title("📁 VectorInsight: Multi-File PDF/TXT/Q&A with LLaMA 3")
 
 uploaded_files = st.file_uploader(
