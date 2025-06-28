@@ -1,11 +1,11 @@
-# 📁 VectorInsight: Multi-File PDF/TXT/Q&A with LLaMA 3
+# VectorInsight: Multi-File PDF/TXT/Q&A with LLaMA 3
 
 
 VectorInsight enables you to upload and semantically search across multiple PDF, TXT, and ZIP documents, leveraging the power of LLaMA 3 and vector search for rich, context-aware Q&A.
 
 ---
 
-## 🚀 Features
+## Features
 
 - **Multi-File Support:** Upload and process multiple PDF, TXT, and ZIP files (ZIP can contain PDFs or TXTs).
 - **Semantic Q&A:** Ask questions about all uploaded documents and get concise, contextually accurate answers powered by LLaMA 3.
@@ -15,7 +15,7 @@ VectorInsight enables you to upload and semantically search across multiple PDF,
 
 ---
 
-## 🖥️ Interface Overview
+## Interface Overview
 
 - **Upload Area:** Drag and drop or browse for PDF, TXT, or ZIP files (limit 200MB per file).
 - **Question Box:** Enter your question about the uploaded documents.
@@ -25,7 +25,7 @@ VectorInsight enables you to upload and semantically search across multiple PDF,
 
 ---
 
-## 🛠️ Installation
+##  Installation
 
 1. **Clone the repository**
     ```bash
@@ -60,7 +60,7 @@ VectorInsight enables you to upload and semantically search across multiple PDF,
 
 ---
 
-## 📦 Supported File Types
+##  Supported File Types
 
 - PDF (`.pdf`)
 - Text (`.txt`)
@@ -68,7 +68,7 @@ VectorInsight enables you to upload and semantically search across multiple PDF,
 
 ---
 
-## 🤖 How It Works
+## How It Works
 
 1. **Upload:** Select or drag and drop multiple files.
 2. **Extract:** Text is extracted from supported file types (including inside ZIPs).
@@ -80,12 +80,12 @@ VectorInsight enables you to upload and semantically search across multiple PDF,
 
 ---
 
-## 📷 Screenshot
+##  Screenshot
 
 ![Screenshot 2025-06-28 182040](https://github.com/user-attachments/assets/a100a9f5-7eed-4c90-af72-29f4b1953f67)
 
 
-## 🙏 Acknowledgements
+##  Acknowledgements
 
 - [Streamlit](https://streamlit.io/)
 - [PyMuPDF](https://pymupdf.readthedocs.io/)
