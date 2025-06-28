@@ -1,99 +1,92 @@
-# -VectorInsight-A-RAG-Powered-PDF-Explorer
-Here's a clean, professional `README.md` for your Streamlit RAG app project:
+# VectorInsight-A-RAG-Powered-PDF-Explorer
 
----
 
-### 📄 `README.md`
 
-````markdown
-# DocuQuery: Semantic PDF Search with RAG
+A simple Streamlit app that demonstrates Retrieval-Augmented Generation (RAG) using chunking, embedding, and vector search over PDFs. Upload a research PDF, ask questions about its content, and get contextually relevant answers based on semantic search.
 
-**DocuQuery** is a lightweight Streamlit web application that enables semantic search and question-answering on PDF documents using a Retrieval-Augmented Generation (RAG) approach. It combines document chunking, sentence embeddings, and vector similarity search to find the most relevant context for a given user query.
+## Features
 
----
+- **PDF Upload**: Upload any research PDF for analysis.
+- **Text Extraction**: Extracts text from all pages of the PDF.
+- **Text Chunking**: Splits extracted text into overlapping chunks for better retrieval.
+- **Semantic Embedding**: Uses `sentence-transformers` to embed each chunk.
+- **FAISS Vector Search**: Builds a FAISS index for fast similarity search.
+- **Question Answering**: Enter a question and retrieve the most relevant chunks from your document.
+- **Streamlit UI**: Easy-to-use interface with upload, query, and result display.
 
-## 🔍 Features
+## Demo
 
-- 📄 Upload and process any PDF document
-- ✂️ Automatically chunk content for better retrieval
-- 🤖 Create embeddings using `SentenceTransformers`
-- 🧠 Perform fast semantic search using `FAISS`
-- 💬 Ask questions and retrieve top relevant chunks
-- 🌐 Simple web interface powered by `Streamlit`
+![demo-screenshot](demo-screenshot.png)  <!-- Add a screenshot if available -->
 
----
+## Requirements
 
-## 🛠️ Tech Stack
+- Python 3.8+
+- [Streamlit](https://streamlit.io/)
+- [PyMuPDF (fitz)](https://pymupdf.readthedocs.io/en/latest/)
+- [sentence-transformers](https://www.sbert.net/)
+- [langchain](https://python.langchain.com/)
+- [faiss-cpu](https://github.com/facebookresearch/faiss)
+- numpy
 
-- `Streamlit` – UI
-- `SentenceTransformers` – Embedding model
-- `FAISS` – Vector similarity search
-- `PyMuPDF` – PDF text extraction
-- `LangChain` – Chunking helper
-
----
-
-## 🚀 Getting Started
-
-### 1. Clone the repository
+## Installation
 
 ```bash
-git clone https://github.com/your-username/docuquery.git
-cd docuquery
-````
+# Create and activate a new environment (optional but recommended)
+python -m venv venv
+source venv/bin/activate  # On Windows use: venv\Scripts\activate
 
-### 2. Install dependencies
-
-```bash
-pip install -r requirements.txt
+# Install dependencies
+pip install streamlit pymupdf sentence-transformers langchain faiss-cpu numpy
 ```
 
-### 3. Run the app
+## Usage
 
 ```bash
 streamlit run app.py
 ```
 
-Then open [http://localhost:8501](http://localhost:8501) in your browser.
+1. Open the web browser link provided by Streamlit.
+2. Upload a PDF file.
+3. Enter your question in the text input.
+4. View the top-matching chunks and a simulated answer.
+
+## How It Works
+
+1. **PDF Parsing**: The app loads your PDF and extracts all text.
+2. **Chunking**: The text is split into manageable, possibly overlapping chunks for better retrieval and context.
+3. **Embedding**: Each chunk is embedded into a vector space using a pre-trained SentenceTransformer model.
+4. **Indexing**: All chunk embeddings are indexed with FAISS for fast similarity search.
+5. **Querying**: When you submit a question, it is embedded and searched against the index. The top-k most similar chunks are displayed.
+
+## Code Overview
+
+Key components of the app:
+
+- `extract_text_from_pdf`: Extracts text from the entire PDF.
+- `chunk_text`: Splits text into overlapping chunks.
+- `load_model`: Loads the SentenceTransformer embedding model.
+- `embed_text`: Embeds each chunk into a vector.
+- `build_faiss_index`: Builds a FAISS flat index from the embeddings.
+- `search_index`: Finds the most relevant text chunks for a given query.
+
+## Limitations
+
+- The "answer" is simulated; it displays the most relevant chunks but does not generate a new answer.
+- Only supports research PDFs in English.
+- For best results, use research papers with selectable (not scanned) text.
+
+## License
+
+MIT License
+
+## Acknowledgements
+
+- [Streamlit](https://streamlit.io/)
+- [PyMuPDF](https://github.com/pymupdf/PyMuPDF)
+- [sentence-transformers](https://www.sbert.net/)
+- [LangChain](https://github.com/langchain-ai/langchain)
+- [FAISS](https://github.com/facebookresearch/faiss)
 
 ---
 
-## 📂 File Structure
-
-```
-docuquery/
-├── app.py               # Streamlit app
-├── requirements.txt     # Project dependencies
-└── README.md            # Project overview
-```
-
----
-
-## 📌 To-Do / Extensions
-
-* Integrate OpenAI or LLaMA 3 for real LLM answers
-* Add support for multiple document uploads
-* Store chunks with metadata (page number, file name)
-* Add persistent vector database (e.g., Qdrant, Pinecone)
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
----
-
-## 🤝 Acknowledgements
-
-* [FAISS by Facebook](https://github.com/facebookresearch/faiss)
-* [SentenceTransformers](https://www.sbert.net/)
-* [LangChain](https://www.langchain.com/)
-* [Streamlit](https://streamlit.io/)
-
-```
-
----
-
-Let me know if you'd like help deploying it to Hugging Face Spaces or Streamlit Community Cloud.
-```
+*Built with ❤️ for rapid RAG prototyping!*
