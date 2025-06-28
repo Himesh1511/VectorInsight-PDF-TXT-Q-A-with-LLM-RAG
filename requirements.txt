@@ -4,3 +4,4 @@ faiss-cpu
 pymupdf
 langchain
 requests
+zipfile36
