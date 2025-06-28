@@ -29,7 +29,7 @@ VectorInsight enables you to upload and semantically search across multiple PDF,
 
 1. **Clone the repository**
     ```bash
-    git clone https://github.com/yourusername/yourrepo.git
+    git clone https://github.com/yourusername/yourrepo.git](https://github.com/Himesh1511/VectorInsight-Multi-File-PDF-TXT-Q-A-with-LLaMA-3.git
     cd yourrepo
     ```
 
