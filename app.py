@@ -6,19 +6,17 @@ import tempfile
 from pathlib import Path
 from sentence_transformers import SentenceTransformer
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-import faiss
 import numpy as np
 import requests
+import pinecone
 
 # --- File Parsing Logic ---
 def extract_text_from_file(file, filetype):
     if filetype == ".pdf":
         doc = fitz.open(stream=file.read(), filetype="pdf")
         return "\n".join(page.get_text() for page in doc)
-    
     elif filetype == ".txt":
         return file.read().decode("utf-8", errors="ignore")
-    
     return ""  # fallback
 
 def extract_text_from_zip(uploaded_zip):
@@ -49,15 +47,25 @@ def load_model():
 def embed_text(chunks, model):
     return model.encode(chunks, convert_to_numpy=True)
 
-def build_faiss_index(embeddings):
-    index = faiss.IndexFlatL2(embeddings.shape[1])
-    index.add(embeddings)
-    return index
+# --- Pinecone Functions ---
+def init_pinecone(api_key, env, index_name, dim):
+    pinecone.init(api_key=api_key, environment=env)
+    if index_name not in pinecone.list_indexes():
+        pinecone.create_index(index_name, dimension=dim, metric="cosine")
+    return pinecone.Index(index_name)
 
-def search_index(query, model, index, chunks, k=3):
-    query_vec = model.encode([query])
-    distances, indices = index.search(query_vec, k)
-    return [chunks[i] for i in indices[0]]
+def upsert_embeddings(index, chunks, embeddings, namespace="default"):
+    # Pinecone expects a list of (id, vector, metadata)
+    vectors = [(str(i), emb.tolist(), {"text": chunk}) for i, (chunk, emb) in enumerate(zip(chunks, embeddings))]
+    # Pinecone's batch limit is 100 vectors per upsert
+    batch_size = 100
+    for i in range(0, len(vectors), batch_size):
+        index.upsert(vectors=vectors[i:i+batch_size], namespace=namespace)
+
+def query_pinecone(index, model, query, top_k=3, namespace="default"):
+    query_vector = model.encode([query])[0].tolist()
+    results = index.query(vector=query_vector, top_k=top_k, namespace=namespace, include_metadata=True)
+    return [match['metadata']['text'] for match in results['matches']]
 
 # --- LLaMA 3 Answer Generation ---
 def generate_llama3_answer(query, context):
@@ -100,6 +108,12 @@ uploaded_files = st.file_uploader(
 )
 query = st.text_input("💬 Ask a question about the uploaded documents")
 
+# --- Pinecone Config ---
+PINECONE_API_KEY = st.secrets["PINECONE_API_KEY"]
+PINECONE_ENV = st.secrets["PINECONE_ENV"]
+PINECONE_INDEX_NAME = "vectorinsight-index"
+PINECONE_NAMESPACE = "default"  # can be customized/user-specific if needed
+
 if uploaded_files:
     all_text = ""
     for file in uploaded_files:
@@ -117,13 +131,16 @@ if uploaded_files:
             chunks = chunk_text(all_text)
             model = load_model()
             embeddings = embed_text(chunks, model)
-            index = build_faiss_index(embeddings)
+            
+            # Init Pinecone and upsert embeddings
+            pinecone_index = init_pinecone(PINECONE_API_KEY, PINECONE_ENV, PINECONE_INDEX_NAME, embeddings.shape[1])
+            upsert_embeddings(pinecone_index, chunks, embeddings, namespace=PINECONE_NAMESPACE)
 
         st.success(f"✅ Processed {len(chunks)} chunks.")
 
         if query:
             with st.spinner("🧠 Searching and querying LLaMA 3..."):
-                top_chunks = search_index(query, model, index, chunks)
+                top_chunks = query_pinecone(pinecone_index, model, query, namespace=PINECONE_NAMESPACE)
                 context = "\n\n".join(top_chunks)
                 try:
                     answer = generate_llama3_answer(query, context)
