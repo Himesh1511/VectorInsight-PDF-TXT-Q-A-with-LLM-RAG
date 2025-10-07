@@ -21,16 +21,34 @@ st.markdown("""
 <style>
 body {
     background-color: #f7f8fa;
+    margin: 0;
+    padding: 0;
 }
 
 /* Reduce page bottom padding */
 .block-container {
     padding-bottom: 1rem !important;
+    max-width: 100% !important;
+}
+
+/* Main layout */
+.main .block-container {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
 }
 
 /* Sidebar styling */
 .sidebar-content {
     padding: 1rem;
+}
+
+/* Chat container */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 200px);
 }
 
 /* Chat box styling */
@@ -41,8 +59,7 @@ body {
     padding: 1rem;
     background: #ffffff;
     border-radius: 12px;
-    min-height: 65vh;  /* smaller fixed height to remove blank space */
-    max-height: 70vh;
+    height: 100%;
     overflow-y: auto;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     margin-bottom: 0 !important;
@@ -74,9 +91,22 @@ body {
     color: #6b7280;
     font-style: italic;
 }
+
+/* Input area */
+.stTextInput {
+    margin-top: 0.5rem !important;
+}
+
+/* Fix streamlit spacing */
+.st-emotion-cache-1y4p8pa {
+    padding-top: 0rem !important;
+}
+
+.st-emotion-cache-1wrcq25 {
+    padding-top: 0rem !important;
+}
 </style>
 """, unsafe_allow_html=True)
-
 
 st.title("💬 VectorInsight — AI Document Assistant")
 
@@ -209,16 +239,29 @@ if uploaded_files:
         st.success("Documents processed and summary generated ✅")
 
 # ------------------ Chat Interface ------------------
-st.markdown("### 💭 Chat Window")
-chat_box = st.container()
+# Create a container for the entire chat section
+chat_container = st.container()
 
-with chat_box:
-    st.markdown('<div class="chat-box">', unsafe_allow_html=True)
-    for role, msg in st.session_state["history"]:
-        css = "user-msg" if role == "user" else "bot-msg"
-        st.markdown(f"<div class='{css}'>{msg}</div>", unsafe_allow_html=True)
+with chat_container:
+    # Add the chat container wrapper
+    st.markdown('<div class="chat-container">', unsafe_allow_html=True)
+    
+    st.markdown("### 💭 Chat Window")
+    
+    # Create the chat box
+    chat_box = st.container()
+    
+    with chat_box:
+        st.markdown('<div class="chat-box">', unsafe_allow_html=True)
+        for role, msg in st.session_state["history"]:
+            css = "user-msg" if role == "user" else "bot-msg"
+            st.markdown(f"<div class='{css}'>{msg}</div>", unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Close the chat container wrapper
     st.markdown('</div>', unsafe_allow_html=True)
 
+# Chat input
 user_input = st.chat_input("Type your message...")
 
 if user_input:
