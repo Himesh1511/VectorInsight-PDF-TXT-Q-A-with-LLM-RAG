@@ -23,34 +23,32 @@ body {
     background-color: #f7f8fa;
 }
 
-/* Tight layout: remove extra padding at bottom of main container */
+/* Reduce page bottom padding */
 .block-container {
-    padding-bottom: 0 !important;
-    margin-bottom: 0 !important;
+    padding-bottom: 1rem !important;
 }
 
-/* Sidebar layout */
+/* Sidebar styling */
 .sidebar-content {
     padding: 1rem;
 }
 
-/* Chat box */
+/* Chat box styling */
 .chat-box {
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
     gap: 0.6rem;
     padding: 1rem;
     background: #ffffff;
     border-radius: 12px;
-    min-height: 70vh; /* responsive height */
-    max-height: 75vh;
+    min-height: 65vh;  /* smaller fixed height to remove blank space */
+    max-height: 70vh;
     overflow-y: auto;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    margin-bottom: 0 !important; /* no white gap under chat */
+    margin-bottom: 0 !important;
 }
 
-/* User and bot messages */
+/* Messages */
 .user-msg {
     align-self: flex-end;
     background: #DCF8C6;
@@ -72,25 +70,13 @@ body {
     margin-bottom: 0.2rem;
 }
 
-/* Chat input area fix */
-[data-testid="stChatInput"] {
-    margin-top: 0 !important;
-    padding-top: 0 !important;
-    position: fixed;
-    bottom: 1.2rem;
-    width: 80%;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
-}
-
-/* Typing indicator */
 .typing {
     color: #6b7280;
     font-style: italic;
 }
 </style>
 """, unsafe_allow_html=True)
+
 
 st.title("💬 VectorInsight — AI Document Assistant")
 
