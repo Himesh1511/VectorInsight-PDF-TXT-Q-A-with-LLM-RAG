@@ -1,5 +1,4 @@
 import streamlit as st
-import os
 import zipfile
 import fitz  # PyMuPDF
 import tempfile
@@ -20,82 +19,105 @@ st.set_page_config(page_title="VectorInsight Chat", page_icon="💬", layout="wi
 
 st.markdown("""
 <style>
-.chat-container {
-    background: #fafafa;
-    border-radius: 12px;
+body {
+    background-color: #f7f8fa;
+}
+.sidebar-content {
     padding: 1rem;
+}
+.chat-box {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 1rem;
+    background: #ffffff;
+    border-radius: 12px;
+    min-height: 450px;
     max-height: 550px;
     overflow-y: auto;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 .user-msg {
-    background: #DCF8C6;
-    border-radius: 12px;
-    padding: 0.5rem 0.75rem;
-    margin: 0.5rem 0;
-    max-width: 80%;
     align-self: flex-end;
+    background: #DCF8C6;
+    border-radius: 16px 16px 0 16px;
+    padding: 0.6rem 0.9rem;
+    max-width: 75%;
+    word-wrap: break-word;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 .bot-msg {
-    background: #FFF;
-    border-radius: 12px;
-    padding: 0.5rem 0.75rem;
-    margin: 0.5rem 0;
-    border: 1px solid #e5e7eb;
-    max-width: 80%;
     align-self: flex-start;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px 16px 16px 0;
+    padding: 0.6rem 0.9rem;
+    max-width: 75%;
+    word-wrap: break-word;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.typing {
+    color: #6b7280;
+    font-style: italic;
 }
 </style>
 """, unsafe_allow_html=True)
 
-st.title("💬 VectorInsight — Chat • Doc-QA • Summariser")
+st.title("💬 VectorInsight — AI Document Assistant")
 
 # ------------------ Sidebar ------------------
 with st.sidebar:
     st.header("⚙️ Settings")
-    mode = st.radio("Select Mode", ["Chat", "Doc-QA", "Summariser"], horizontal=True)
+
+    uploaded_files = st.file_uploader(
+        "📂 Upload PDF/TXT/ZIP files",
+        type=["pdf", "txt", "zip"],
+        accept_multiple_files=True,
+        help="Upload your documents here to analyze and chat with."
+    )
+
+    temperature = st.slider("Response Temperature", 0.0, 1.0, 0.3, 0.05)
     k = st.slider("Top-K Chunks", 1, 10, 3)
     chunk_size = st.slider("Chunk Size", 200, 1200, 500, 50)
     chunk_overlap = st.slider("Chunk Overlap", 0, 400, 80, 20)
-    temperature = st.slider("Temperature", 0.0, 1.0, 0.3, 0.05)
-    st.button("🧹 Clear Session", on_click=lambda: st.session_state.clear())
+    st.divider()
+    st.button("🧹 Clear Chat", on_click=lambda: st.session_state.clear())
 
 # ------------------ Helper Functions ------------------
 def chunk_text(text, size, overlap):
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=size, chunk_overlap=overlap,
+        chunk_size=size,
+        chunk_overlap=overlap,
         separators=["\n\n", "\n", ". ", "!", "?", ";", ","]
     )
     return splitter.split_text(text)
 
 def extract_text_from_file(file, ext):
-    name = getattr(file, "name", None)
     if ext.lower() == ".pdf":
         data = file.read()
         doc = fitz.open(stream=data, filetype="pdf")
         text = "\n".join(page.get_text() for page in doc)
-        return text, {"pages": doc.page_count, "chars": len(text), "name": name}
+        return text
     elif ext.lower() == ".txt":
         data = file.read()
         try:
             text = data.decode("utf-8", errors="ignore")
         except Exception:
             text = str(data)
-        return text, {"pages": None, "chars": len(text), "name": name}
-    return "", {"pages": None, "chars": 0, "name": name}
+        return text
+    return ""
 
 def extract_text_from_zip(uploaded_zip):
-    texts, metas = [], []
+    texts = []
     with tempfile.TemporaryDirectory() as tmpdir:
         with zipfile.ZipFile(uploaded_zip, "r") as z:
             z.extractall(tmpdir)
         for file in Path(tmpdir).rglob("*"):
             if file.suffix.lower() in [".pdf", ".txt"]:
                 with open(file, "rb") as f:
-                    text, meta = extract_text_from_file(f, file.suffix)
-                    meta["name"] = file.name
+                    text = extract_text_from_file(f, file.suffix)
                     texts.append(text)
-                    metas.append(meta)
-    return "\n".join(texts), metas
+    return "\n".join(texts)
 
 @st.cache_resource
 def load_model():
@@ -138,47 +160,48 @@ if "model" not in st.session_state:
     st.session_state["model"] = load_model()
 if "history" not in st.session_state:
     st.session_state["history"] = []
-if "chunks" not in st.session_state:
-    st.session_state["chunks"] = []
 if "index" not in st.session_state:
     st.session_state["index"] = None
-if "uploaded_text" not in st.session_state:
-    st.session_state["uploaded_text"] = ""
+if "chunks" not in st.session_state:
+    st.session_state["chunks"] = []
+if "text_data" not in st.session_state:
+    st.session_state["text_data"] = ""
 
-# ------------------ Upload ------------------
-uploaded_files = st.file_uploader("📂 Upload PDF/TXT/ZIP files", type=["pdf", "txt", "zip"], accept_multiple_files=True)
+# ------------------ Process Upload ------------------
 if uploaded_files:
-    full_texts, metas = [], []
-    for f in uploaded_files:
-        if f.name.endswith(".zip"):
-            text, m = extract_text_from_zip(f)
-            full_texts.append(text)
-            metas += m
+    full_texts = []
+    for file in uploaded_files:
+        if file.name.endswith(".zip"):
+            text = extract_text_from_zip(file)
         else:
-            text, meta = extract_text_from_file(f, Path(f.name).suffix)
-            full_texts.append(text)
-            metas.append(meta)
-    combined_text = "\n".join(full_texts)
-    st.session_state["uploaded_text"] = combined_text
+            text = extract_text_from_file(file, Path(file.name).suffix)
+        full_texts.append(text)
 
-    if mode in ["Doc-QA", "Summariser"] and st.button("⚙️ Process Documents"):
-        with st.spinner("Chunking and embedding..."):
+    combined_text = "\n".join(full_texts)
+    if combined_text and combined_text != st.session_state["text_data"]:
+        st.session_state["text_data"] = combined_text
+        with st.spinner("Processing documents..."):
             chunks = chunk_text(combined_text, chunk_size, chunk_overlap)
             embeddings = embed_text(chunks, st.session_state["model"])
             index = build_faiss_index(embeddings)
             st.session_state["chunks"] = chunks
             st.session_state["index"] = index
-        st.success(f"Indexed {len(chunks)} chunks ✅")
+        # Auto-generate summary
+        with st.spinner("Generating summary..."):
+            summary_prompt = f"Summarise the following document clearly and concisely:\n\n{combined_text[:15000]}"
+            summary = llama3_generate(summary_prompt, temperature)
+            st.session_state["history"].append(("bot", f"📄 Document Summary:\n{summary}"))
+        st.success("Documents processed and summary generated ✅")
 
 # ------------------ Chat Interface ------------------
 st.markdown("### 💭 Chat Window")
-chat_container = st.container()
-with chat_container:
-    st.markdown('<div class="chat-container">', unsafe_allow_html=True)
-    for msg in st.session_state["history"]:
-        role, text = msg
+chat_box = st.container()
+
+with chat_box:
+    st.markdown('<div class="chat-box">', unsafe_allow_html=True)
+    for role, msg in st.session_state["history"]:
         css = "user-msg" if role == "user" else "bot-msg"
-        st.markdown(f"<div class='{css}'>{text}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='{css}'>{msg}</div>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
 user_input = st.chat_input("Type your message...")
@@ -186,33 +209,22 @@ user_input = st.chat_input("Type your message...")
 if user_input:
     st.session_state["history"].append(("user", user_input))
     with st.spinner("Thinking..."):
-        if mode == "Chat":
-            prompt = user_input
-        elif mode == "Doc-QA":
-            if st.session_state["index"] is None:
-                st.warning("Please process documents first.")
-                prompt = "Please process documents first."
-            else:
-                dists, idxs = search_index(user_input, st.session_state["model"], st.session_state["index"], k)
-                context = "\n\n".join([st.session_state["chunks"][i] for i in idxs])
-                prompt = f"""You are a helpful assistant. 
-Use ONLY the context below to answer clearly. 
-If the answer is not in the context, say you don't know.
+        if st.session_state["index"] is not None:
+            dists, idxs = search_index(user_input, st.session_state["model"], st.session_state["index"], k)
+            context = "\n\n".join([st.session_state["chunks"][i] for i in idxs])
+            prompt = f"""You are a helpful assistant.
+Answer the user's question using the context below.
+If the context doesn't contain the answer, rely on general knowledge.
 
 Context:
 {context}
 
 Question: {user_input}
 Answer:"""
-        elif mode == "Summariser":
-            if not st.session_state["uploaded_text"]:
-                st.warning("Upload documents first.")
-                prompt = "Please upload documents first."
-            else:
-                prompt = f"Summarise the following document clearly and concisely:\n\n{st.session_state['uploaded_text']}"
+        else:
+            prompt = user_input
         answer = llama3_generate(prompt, temperature)
         st.session_state["history"].append(("bot", answer))
-
     st.rerun()
 
-st.markdown("<br><sub>🧠 VectorInsight Multi-Mode AI Assistant</sub>", unsafe_allow_html=True)
+st.markdown("<br><sub>🧠 VectorInsight Unified Document Chat Assistant</sub>", unsafe_allow_html=True)
