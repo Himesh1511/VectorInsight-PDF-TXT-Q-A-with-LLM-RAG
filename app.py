@@ -23,28 +23,34 @@ body {
     background-color: #f7f8fa;
 }
 
-/* Sidebar padding */
+/* Tight layout: remove extra padding at bottom of main container */
+.block-container {
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+/* Sidebar layout */
 .sidebar-content {
     padding: 1rem;
 }
 
-/* Chat box styling */
+/* Chat box */
 .chat-box {
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
     gap: 0.6rem;
-    padding: 0.8rem 1rem;
+    padding: 1rem;
     background: #ffffff;
     border-radius: 12px;
-    min-height: 450px;
-    max-height: 550px;
+    min-height: 70vh; /* responsive height */
+    max-height: 75vh;
     overflow-y: auto;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    margin-bottom: 0; /* remove extra spacing below chat box */
+    margin-bottom: 0 !important; /* no white gap under chat */
 }
 
-/* Chat message bubbles */
+/* User and bot messages */
 .user-msg {
     align-self: flex-end;
     background: #DCF8C6;
@@ -52,7 +58,6 @@ body {
     padding: 0.6rem 0.9rem;
     max-width: 75%;
     word-wrap: break-word;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     margin-bottom: 0.2rem;
 }
 
@@ -64,13 +69,19 @@ body {
     padding: 0.6rem 0.9rem;
     max-width: 75%;
     word-wrap: break-word;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     margin-bottom: 0.2rem;
 }
 
-/* Reduce spacing below everything */
-.block-container {
-    padding-bottom: 0 !important;
+/* Chat input area fix */
+[data-testid="stChatInput"] {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    position: fixed;
+    bottom: 1.2rem;
+    width: 80%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
 }
 
 /* Typing indicator */
@@ -80,6 +91,7 @@ body {
 }
 </style>
 """, unsafe_allow_html=True)
+
 st.title("💬 VectorInsight — AI Document Assistant")
 
 # ------------------ Sidebar ------------------
