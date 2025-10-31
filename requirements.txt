@@ -1,10 +1,7 @@
 streamlit
-langchain==0.1.20
-langchain-community==0.1.0
-faiss-cpu
-pypdf
-python-dotenv
-huggingface-hub
-tiktoken
 sentence-transformers
+faiss-cpu
+pymupdf
+numpy
 requests
+langchain-text-splitters
