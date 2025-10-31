@@ -5,7 +5,7 @@ import tempfile
 from pathlib import Path
 from typing import List, Dict, Any, Tuple
 from sentence_transformers import SentenceTransformer
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 import numpy as np
 import requests
 
