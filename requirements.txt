@@ -1,8 +1,9 @@
 streamlit
+langchain==0.1.20
+langchain-community==0.1.0
 sentence-transformers
 faiss-cpu
 pymupdf
-langchain
 requests
 PyPDF2
 zipfile36
